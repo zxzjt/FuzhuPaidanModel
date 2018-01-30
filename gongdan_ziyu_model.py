@@ -58,7 +58,7 @@ class MultiLabelEncoder(object):
         return en_X
 
 class ZiyuClassifier(object):
-    """工单自愈分类器
+    """工单自恢复分类器
     数据编码转换，模型训练，预测，优化
 
     参数
@@ -140,8 +140,8 @@ class ZiyuClassifier(object):
         :return: DataFrame,预测的结果
         """
         predict_res = pd.DataFrame()
-        predict_res['自愈判断'] = self.model.predict(X)
-        predict_res['自愈概率'] = np.max(self.model.predict_proba(X), axis=1)
+        predict_res['自恢复判断'] = self.model.predict(X)
+        predict_res['自恢复概率'] = np.max(self.model.predict_proba(X), axis=1)
         return predict_res
 
     def para_opt(self, X, y, param_grid, cv=5, scoring='roc_auc'):
@@ -208,7 +208,9 @@ class DataChecker(object):
     data_exception_keys数据异常的字段
     """
     # 使用的指标字段
-    keys_class = ['场景要素', '覆盖类型', '问题归类(二级)', '地市', '区县', '数据来源', '业务要素']  # '覆盖场景'
+    keys_class = [ '地市', '区县','网元要素', '数据来源','问题归类(一级)','问题归类(二级)',
+                  '类别要素','处理优先级','目前状态','是否指纹库智能分析系统运算',
+                  '是否质检通过','资管生命周期状态','业务要素','场景要素', '覆盖类型',]  # '覆盖场景'
     keys_num = ['告警触发次数', '日均流量(GB)']  # '中心经度', '中心维度'
     """新的原始问题库{问题归类(二级),主指标表征值}-->老库{问题现象,表征指标值}"""
     std_data_values = {'问题触发时间':[],
@@ -225,11 +227,12 @@ class DataChecker(object):
                              '莲都','龙泉','青田','缙云','遂昌','松阳','云和','庆元','景宁','开发区',
                              '定海','普陀','岱山','嵊泗'],
                        '网络类型':['4G','2G'],
-                       '网元要素':['基站','路段','小区','栅格'],
-                       '数据来源':['SEQ','北向性能','实时性能告警'],
-                       '问题归类(一级)':[],
-                       '问题归类(二级)':['无线切换质差', 'VOLTE接通质差', 'SRVCC切换质差', 'VOLTE丢包质差', 'VOLTE掉话质差',
-                                 '语音质差', '无线接通质差', '实时性能持续质差', 'CSFB回落质差', '无线掉线质差', 'RRC重建比质差'],
+                       '网元要素':['基站','小区'],
+                       '数据来源':['OTT智能定位平台', 'LTE-MR', 'SEQ', '北向性能'],
+                       '问题归类(一级)':['干扰问题', '负荷问题', '结构问题', 'VOLTE问题', '性能问题', '覆盖问题', '感知问题', '互操作问题'],
+                       '问题归类(二级)':['掉线质差', '接通质差', '切换质差', '语音MOS质差', '高负荷', 'SRVCC切换质差', '重叠覆盖',
+                                       'VOLTE丢包质差', '上行SINR质量差', '弱覆盖', '过覆盖', 'CSFB性能质差', '零流量', '高干扰',
+                                       'VOLTE接通质差', 'VOLTE掉话质差', '低速率'],
                        '问题类型':[],
                        '类别要素':['互操作','感知','质量','负荷','结构'],
                        '是否追加':['是','否'],
@@ -243,21 +246,21 @@ class DataChecker(object):
                        '是否列为白名单':['是','否'],
                        '是否为性能交维站点':['是','否'],
                        '是否质检通过':['是','否','未质检'],
-                       '资管生命周期状态':['工程','现网','维护','设计','在网'],
+                       '资管生命周期状态':['现网'],#'工程','维护','设计','在网'
                        #'劣化次数':[1,31],
                        '告警触发次数':[1,500],
                        '日均流量(GB)':[0.0,1000],
                        '业务要素':['数据','语音'],
                        '触发要素':['劣于门限','异常事件','人工创造'],
-                       '场景要素':['高速', '海域', '室外', '普铁', '室分', '地铁', '山区', '小微站', '高校', '高铁', '全网'],
+                       '场景要素':['室分', '普铁', '风景区', '室外', '地铁', '高校', '山区', '全网', '高流量',
+                                 '高速', '高铁', '美食街', '高层', '小微站', '海域'],
                        '覆盖类型':['室内','室外'],
-                       '覆盖场景':['工业园区', '写字楼', '别墅群', '低层居民区', '高铁', '医院', '高速公路', '村庄',
-                                 '长途汽车站', '高层居民区', '机场', '其他', '星级酒店', '航道', '党政军机关', '广场公园',
-                                 '乡镇', '商业中心', '火车站', '体育场馆', '山农牧林', '近水近海域', '高校', '国道省道',
-                                 '地铁', '郊区道路', '风景区', '公墓', '普铁', '中小学', '集贸市场', '码头', '城区道路',
-                                 '边境小区', '企事业单位', '城中村', '会展中心', '休闲娱乐场所'],
+                       '覆盖场景':['普铁', '地铁', '乡镇', '集贸市场', '公墓', '高速公路', '高层居民区', '写字楼', '高校',
+                                 '低层居民区', '会展中心', '风景区', '边境小区', '中小学', '党政军机关', '国道省道',
+                                 '党政军宿舍', '武警军区', '别墅群', '体育场馆', '郊区道路', '医院', '商业中心', '航道',
+                                 '高铁', '企事业单位', '码头', '长途汽车站', '其他', '广场公园', '城区道路', '工业园区',
+                                 '火车站', '机场', '休闲娱乐场所', '城中村', '村庄', '近水近海域', '山农牧林', '星级酒店'],
                        '二级场景':[],
-                       '时间维度':['天'],
                        '中心经度':[118.037,123.143],
                        '中心维度':[27.22,31.18],
                        'TAC(LAC)':[22148,26840]}
@@ -393,9 +396,9 @@ def ziyu_process(data,file):
             predict_test = mdl.predict(testX_prepro)
             # mdl.plot_learning_curve(name='RF learning_curve',X=trainX_prepro,y=train_y_prepro,cv=5)
             # print(mdl.model)
-            # print(metrics.confusion_matrix(ZiyuClassifier.encoder4.transform(data.iloc[:,-1]), predict_test['自愈判断']))
-            # print(metrics.classification_report(ZiyuClassifier.encoder4.transform(data.iloc[:,-1]), predict_test['自愈判断']))
-            predict_test['自愈判断'] = mdl.encoder4.inverse_transform(predict_test['自愈判断'])
+            # print(metrics.confusion_matrix(ZiyuClassifier.encoder4.transform(data.iloc[:,-1]), predict_test['自恢复判断']))
+            # print(metrics.classification_report(ZiyuClassifier.encoder4.transform(data.iloc[:,-1]), predict_test['自恢复判断']))
+            predict_test['自恢复判断'] = mdl.encoder4.inverse_transform(predict_test['自恢复判断'])
             # 合并数据，添加字段
             data_with_predict = pd.concat((data, predict_test), axis=1, join='outer')
             # 写入文件
@@ -405,17 +408,21 @@ def ziyu_process(data,file):
 
 if __name__ == "__main__":
 
-    data_all = pd.read_csv('./78910_all.csv', sep=',', encoding='gbk').reset_index(drop=True)
-    test = data_all[data_all['问题触发时间'] == '9月'].reset_index(drop=True)
+    data_all = pd.read_csv('./train.csv', sep=',', encoding='gbk').reset_index(drop=True)
+    # test = data_all[data_all['问题触发时间'] == '9月'].reset_index(drop=True)
     # 抽样
-    train_all = data_all[data_all['问题触发时间'] != '9月'].reset_index(drop=True)
-    train = data_all  # pd.concat([train_all[train_all.自愈状态=='派单'].sample(frac=0.5,axis=0,random_state=0),train_all[train_all.自愈状态=='自愈']],axis=0,join='outer')
-    # print("训练样本比例为%f" % (train[train['自愈状态'] == '派单'].shape[0] / train[train['自愈状态'] == '自愈'].shape[0]))
-    # print("测试样本比例为%f" % (test[test['自愈状态'] == '派单'].shape[0] / test[test['自愈状态'] == '自愈'].shape[0]))
+    # train_all = data_all[data_all['问题触发时间'] != '9月'].reset_index(drop=True)
+    train = data_all  # pd.concat([train_all[train_all.自恢复状态=='非自恢复'].sample(frac=0.5,axis=0,random_state=0),train_all[train_all.自恢复状态=='自恢复']],axis=0,join='outer')
+    # print("训练样本比例为%f" % (train[train['自恢复状态'] == '非自恢复'].shape[0] / train[train['自恢复状态'] == '自恢复'].shape[0]))
+    # print("测试样本比例为%f" % (test[test['自恢复状态'] == '非自恢复'].shape[0] / test[test['自恢复状态'] == '自恢复'].shape[0]))
     # 创建模型
     model=ZiyuClassifier(RandomForestClassifier(n_estimators=120,min_samples_leaf=1,max_depth=12,max_features=0.4,random_state=0))
-    trainX_prepro,train_y_prepro=model.data_fit_transform(train.iloc[:,:-1],train.loc[:,'自愈状态'])
+    trainX_prepro,train_y_prepro=model.data_fit_transform(train.iloc[:,:-1],train.loc[:,'自恢复状态'])
     model.fit(trainX_prepro,train_y_prepro)
+
+    # predict_test = model.predict(trainX_prepro)
+    # print(metrics.confusion_matrix(model.encoder4.transform(train.iloc[:, -1]), predict_test['自恢复判断']))
+    # print(metrics.classification_report(model.encoder4.transform(train.iloc[:, -1]), predict_test['自恢复判断']))
     # 持久化
     joblib.dump(model, './gongdan_ziyu.model')
 
